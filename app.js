@@ -61,6 +61,21 @@ app.get("/pizzas", function(req, res, next){
 })
 
 
+// GET /pizzas/:pizzaId
+app.get("/pizzas/:pizzaId", function(req, res, next) {
+
+    let { pizzaId } = req.params; // note: we get pizzaId as a string
+    pizzaId = parseInt(pizzaId) // convert to an integer
+
+    const result = pizzasArr.find(function (element, i, arr) {
+        return element.id === pizzaId;
+    });
+    
+    res.json(result)
+})
+
+
+
 
 app.listen(PORT, function(){
     console.log(`Server listening on port ${PORT}`);
