@@ -55,9 +55,24 @@ app.get("/contact", function(req, res, next){
     res.sendFile(__dirname + '/views/contact.html')
 })
 
-// GET /pizzas
+// GET /pizzas -- all pizzas
+// GET /pizzas?maxPrice=16 -- all pizzas with a max price of 16
 app.get("/pizzas", function(req, res, next){
-    res.json(pizzasArr)
+
+    let { maxPrice } = req.query
+
+    // if maxPrice is undefined, return an array with all the pizzas
+    if(maxPrice === undefined){
+        res.json(pizzasArr)
+        return;
+    }
+
+    // if we have maxPrice, then we return only the pizzas with that maxPrice
+    const result = pizzasArr.filter(function (element, i, arr) {
+        return element.price <= parseFloat(maxPrice);
+    });
+    
+    res.json(result)
 })
 
 
