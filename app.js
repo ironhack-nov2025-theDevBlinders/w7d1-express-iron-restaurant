@@ -1,10 +1,9 @@
 const express = require("express")
 const logger = require("morgan")
 const mongoose = require("mongoose")
+mongoose.set('runValidators', true);
 
 const Pizza = require("./models/Pizza.model.js")
-
-const pizzasArr = require("./data/pizzas.js")
 
 const PORT = 3000
 
@@ -45,7 +44,7 @@ app.get("/contact", function(req, res, next){
 
 
 
-// POST /pizzas
+// POST /pizzas -- Create a new pizza
 app.post("/pizzas", function (req, res, next) {
 
     const newPizza = req.body
@@ -63,38 +62,81 @@ app.post("/pizzas", function (req, res, next) {
 
 
 
-// GET /pizzas -- all pizzas
+// GET /pizzas -- Get the list of pizzas
 // GET /pizzas?maxPrice=16 -- all pizzas with a max price of 16
-app.get("/pizzas", function(req, res, next){
+app.get("/pizzas", function (req, res, next) {
 
     let { maxPrice } = req.query
 
-    // if maxPrice is undefined, return an array with all the pizzas
-    if(maxPrice === undefined){
-        res.json(pizzasArr)
-        return;
+    let filter = {}
+
+    if (maxPrice !== undefined) {
+        filter = { price: { $lte: maxPrice } }
     }
 
-    // if we have maxPrice, then we return only the pizzas with that maxPrice
-    const result = pizzasArr.filter(function (element, i, arr) {
-        return element.price <= parseFloat(maxPrice);
-    });
-    
-    res.json(result)
+    Pizza.find(filter)
+        .then((pizzasFromDB) => {
+            res.json(pizzasFromDB)
+        })
+        .catch((err) => {
+            console.log("Error getting pizzas from DB...")
+            console.log(err)
+            res.status(500).json({ error: "Failed to get list of pizzas" })
+        })
 })
 
 
-// GET /pizzas/:pizzaId
-app.get("/pizzas/:pizzaId", function(req, res, next) {
+// GET /pizzas/:pizzaId -- Get the details for one pizza
+app.get("/pizzas/:pizzaId", (req, res, next) => {
 
-    let { pizzaId } = req.params; // note: we get pizzaId as a string
-    pizzaId = parseInt(pizzaId) // convert to an integer
+    const { pizzaId } = req.params
 
-    const result = pizzasArr.find(function (element, i, arr) {
-        return element.id === pizzaId;
-    });
-    
-    res.json(result)
+    Pizza.findById(pizzaId)
+        .then((pizzaFromDB) => {
+            res.json(pizzaFromDB)
+        })
+        .catch(error => {
+            console.log("Error getting pizza details from DB...");
+            console.log(error);
+            res.status(500).json({ error: "Failed to get pizza details" });
+        })
+})
+
+
+// PUT /pizzas/:pizzaId -- Update one pizza
+app.put("/pizzas/:pizzaId", function(req, res, next) {
+
+    const { pizzaId } = req.params
+
+    const newDetails = req.body
+
+    Pizza.findByIdAndUpdate(pizzaId, newDetails, {new: true})
+        .then((pizzaFromDB) => {
+            res.json(pizzaFromDB)
+        })
+        .catch((err) => {
+            console.error("Error updating pizza...");
+            console.error(err);
+            res.status(500).json({ error: "Failed to update a pizza" });
+        })
+})
+
+
+
+// DELETE /pizzas/:pizzaId -- Delete one pizza
+app.delete("/pizzas/:pizzaId", (req, res, next) => {
+
+    const { pizzaId } = req.params
+
+    Pizza.findByIdAndDelete(pizzaId)
+        .then((response) => {
+            res.json(response)
+        })
+        .catch((error) => {
+            console.error("Error deleting pizza...");
+            console.error(error);
+            res.status(500).json({ error: "Failed to delete a pizza" });
+        })
 })
 
 
