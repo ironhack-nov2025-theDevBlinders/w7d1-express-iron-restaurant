@@ -3,7 +3,8 @@ const logger = require("morgan")
 const mongoose = require("mongoose")
 mongoose.set('runValidators', true);
 
-const Pizza = require("./models/Pizza.model.js")
+const Pizza = require("./models/Pizza.model.js");
+const Cook = require("./models/Cook.model.js");
 
 const PORT = 3000
 
@@ -139,6 +140,23 @@ app.delete("/pizzas/:pizzaId", (req, res, next) => {
         })
 })
 
+
+
+// POST /cooks -- Create a new cook
+app.post('/cooks', (req, res, next) => {
+
+    const newCook = req.body
+
+    Cook.create(newCook)
+        .then((cookFromDB) => {
+            res.status(201).json(cookFromDB)
+        })
+        .catch((error) => {
+            console.log("Error creating a new cook in the DB...");
+            console.log(error);
+            res.status(500).json({ error: "Failed to create a new cook" })
+        })
+})
 
 
 
