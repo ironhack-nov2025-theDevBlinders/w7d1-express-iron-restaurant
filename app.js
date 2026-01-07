@@ -76,6 +76,7 @@ app.get("/pizzas", function (req, res, next) {
     }
 
     Pizza.find(filter)
+        .populate("cook")
         .then((pizzasFromDB) => {
             res.json(pizzasFromDB)
         })
@@ -93,6 +94,7 @@ app.get("/pizzas/:pizzaId", (req, res, next) => {
     const { pizzaId } = req.params
 
     Pizza.findById(pizzaId)
+        .populate("cook")
         .then((pizzaFromDB) => {
             res.json(pizzaFromDB)
         })
